@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      injectable_generator:injectable_builder:
+        options:
+          auto_register: true
+          # Generates for files in lib/** only
+          generate_for:
+            - lib/**
+

@@ -109,7 +109,7 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
         backgroundColor: CupertinoColors.white,
         middle: const Text(
           'Sự kiện sắp tới',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: CupertinoColors.black,

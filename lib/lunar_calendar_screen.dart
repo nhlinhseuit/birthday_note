@@ -1,6 +1,10 @@
 import 'package:birthday_note/services/lunar_calendar_service.dart';
 import 'package:birthday_note/utils/app_utils.dart';
+import 'package:birthday_note/widgets/calendar_day_cell.dart';
 import 'package:birthday_note/widgets/cupertino_date_picker_widget.dart';
+import 'package:birthday_note/widgets/detailed_day_view.dart';
+import 'package:birthday_note/widgets/legend_item.dart';
+import 'package:birthday_note/widgets/weekday_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -78,26 +82,7 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
         child: Column(
           children: [
             // Custom Vietnamese weekday header
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  for (int i = 0; i < 7; i++) ...[
-                    Expanded(
-                      child: Text(
-                        _getVietnameseWeekday(i),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: CupertinoColors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+            const WeekdayHeader(),
             // Calendar với thông tin lịch âm
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -141,20 +126,37 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
                 ),
                 calendarBuilders: CalendarBuilders(
                   defaultBuilder: (context, day, focusedDay) {
-                    return _buildLunarDayCell(day,
-                        isSelected: false, isToday: false);
+                    return CalendarDayCell(
+                      day: day,
+                      isSelected: false,
+                      isToday: false,
+                      calendarType: CalendarType.lunar,
+                    );
                   },
                   selectedBuilder: (context, day, focusedDay) {
-                    return _buildLunarDayCell(day,
-                        isSelected: true, isToday: false);
+                    return CalendarDayCell(
+                      day: day,
+                      isSelected: true,
+                      isToday: false,
+                      calendarType: CalendarType.lunar,
+                    );
                   },
                   todayBuilder: (context, day, focusedDay) {
-                    return _buildLunarDayCell(day,
-                        isSelected: false, isToday: true);
+                    return CalendarDayCell(
+                      day: day,
+                      isSelected: false,
+                      isToday: true,
+                      calendarType: CalendarType.lunar,
+                    );
                   },
                   outsideBuilder: (context, day, focusedDay) {
-                    return _buildLunarDayCell(day,
-                        isSelected: false, isToday: false, isOutside: true);
+                    return CalendarDayCell(
+                      day: day,
+                      isSelected: false,
+                      isToday: false,
+                      isOutside: true,
+                      calendarType: CalendarType.lunar,
+                    );
                   },
                 ),
                 onDaySelected: (selectedDay, focusedDay) {
@@ -187,17 +189,17 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildLegendItem(
-                      CupertinoIcons.star_fill,
-                      CupertinoColors.systemOrange,
-                      'Ngày lễ',
+                    child: LegendItem(
+                      icon: CupertinoIcons.star_fill,
+                      color: CupertinoColors.systemOrange,
+                      label: 'Ngày lễ',
                     ),
                   ),
                   Expanded(
-                    child: _buildLegendItem(
-                      CupertinoIcons.gift_fill,
-                      CupertinoColors.systemPink,
-                      'Sinh nhật',
+                    child: LegendItem(
+                      icon: Icons.cake_rounded,
+                      color: CupertinoColors.systemPurple,
+                      label: 'Sinh nhật',
                     ),
                   ),
                 ],
@@ -213,7 +215,11 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: CupertinoColors.systemGrey4),
               ),
-              child: _buildDetailedDayView(),
+              child: DetailedDayView(
+                selectedDate: _selectedDay ?? DateTime.now(),
+                showSolarCalendar: false,
+                showLunarCalendar: true,
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -221,161 +227,5 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildLegendItem(IconData icon, Color color, String label) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 8,
-          color: color,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: CupertinoColors.label,
-              fontSize: 12,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLunarDayCell(DateTime day,
-      {required bool isSelected,
-      required bool isToday,
-      bool isOutside = false}) {
-    final DateTime currentDate = DateTime.now();
-    final bool isBeforeCurrentDate =
-        day.isBefore(currentDate) && !isSameDay(day, currentDate);
-
-    final lunarInfo = LunarCalendarService.convertToLunar(day);
-    final holiday = LunarCalendarService.getLunarHoliday(day);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
-      width: 50,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: isToday ? CupertinoColors.systemBlue.withOpacity(0.1) : null,
-        border: isSelected
-            ? Border.all(
-                color: CupertinoColors.activeBlue,
-                width: 2,
-              )
-            : Border.all(
-                color: CupertinoColors.systemGrey5,
-                width: 1,
-              ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 24,
-            child: Center(
-              child: Text(
-                '${lunarInfo.day}',
-                style: TextStyle(
-                  color: isBeforeCurrentDate
-                      ? CupertinoColors.systemGrey2
-                      : CupertinoColors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Stack(
-            children: [
-              Text(
-                lunarInfo.day == 1 ? lunarInfo.monthName : '',
-                style: TextStyle(
-                  color: holiday != null
-                      ? CupertinoColors.systemRed
-                      : isOutside
-                          ? CupertinoColors.systemGrey
-                          : isBeforeCurrentDate
-                              ? CupertinoColors.systemGrey3
-                              : CupertinoColors.systemGrey2,
-                  fontSize: 10,
-                  fontWeight:
-                      holiday != null ? FontWeight.bold : FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailedDayView() {
-    final selectedDate = _selectedDay ?? DateTime.now();
-    final lunarInfo = LunarCalendarService.convertToLunar(selectedDate);
-    final holiday = LunarCalendarService.getLunarHoliday(selectedDate);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Âm lịch',
-            style: const TextStyle(
-              color: CupertinoColors.black,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${lunarInfo.day}',
-            style: const TextStyle(
-              color: CupertinoColors.systemGreen,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Tháng ${lunarInfo.month} năm ${lunarInfo.year}${lunarInfo.isLeapMonth ? " nhuận" : ""}',
-            style: const TextStyle(
-              color: CupertinoColors.black,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 4),
-          if (holiday != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              holiday,
-              style: const TextStyle(
-                color: CupertinoColors.systemRed,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  String _getVietnameseWeekday(int index) {
-    const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-    return weekdays[index];
   }
 }

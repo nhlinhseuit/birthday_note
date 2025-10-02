@@ -195,7 +195,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         backgroundColor: CupertinoColors.white,
         middle: const Text(
           'Tạo sự kiện',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: CupertinoColors.black,
@@ -208,7 +208,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ? const CupertinoActivityIndicator()
               : const Text(
                   'Lưu',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -236,7 +236,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     children: [
                       const Text(
                         'Ngày sự kiện',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: CupertinoColors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -322,7 +322,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 // Tiêu đề sự kiện
                 const Text(
                   'Tiêu đề',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: CupertinoColors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -345,7 +345,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 // Mô tả
                 const Text(
                   'Mô tả (tùy chọn)',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: CupertinoColors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -369,7 +369,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 // Loại lịch
                 const Text(
                   'Loại lịch',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: CupertinoColors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -403,7 +403,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 // Lặp lại
                 const Text(
                   'Lặp lại',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: CupertinoColors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -453,7 +453,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                               SizedBox(width: 12),
                               Text(
                                 'Đang lưu...',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: CupertinoColors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -463,7 +463,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           )
                         : const Text(
                             'Tạo sự kiện',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: CupertinoColors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

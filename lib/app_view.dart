@@ -30,7 +30,7 @@ class MyAppView extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: [
+          supportedLocales: const [
             Locale('vi', 'VN'),
             Locale('en', 'US'),
           ],

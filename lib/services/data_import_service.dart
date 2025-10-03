@@ -132,8 +132,6 @@ class DataImportService {
       },
     ];
 
-    print('Starting birthday import...');
-
     for (final birthday in birthdays) {
       try {
         final name = birthday['name'] as String;
@@ -178,7 +176,7 @@ class DataImportService {
 
         // Create event
         final event = Event(
-          id: '${name.toLowerCase().replaceAll(' ', '_')}_${currentYear}',
+          id: '${name.toLowerCase().replaceAll(' ', '_')}_$currentYear',
           title: 'Sinh nhật $name',
           date: eventDate,
           type: eventType,
@@ -197,16 +195,8 @@ class DataImportService {
         if (!exists) {
           // Add event
           await EventService.addEvent(event);
-          print(
-              '✅ Added: ${event.title} (${eventType == EventType.lunar ? 'Âm lịch' : 'Dương lịch'}) - $relationshipStr');
-        } else {
-          print('⏭️ Skipped: ${event.title} (already exists)');
-        }
-      } catch (e) {
-        print('❌ Error adding ${birthday['name']}: $e');
-      }
+        } else {}
+      } catch (e) {}
     }
-
-    print('Birthday import completed!');
   }
 }

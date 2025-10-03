@@ -27,7 +27,7 @@ bool isSameDay(DateTime date1, DateTime date2) {
 }
 
 class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
-  DateTime _focusedDay = DateTime.now();
+  late DateTime _focusedDay;
   DateTime? _selectedDay;
   List<Event> _events = [];
   bool _isLoading = true;
@@ -35,6 +35,8 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize with current date
+    _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
     _loadEvents();
   }
@@ -104,7 +106,6 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
       maximumYear: 2030,
       onDateSelected: (int day, int month, int year) {
         // Find the solar date that corresponds to this lunar date
-        // We'll search within a reasonable range around the current focused day
         DateTime? foundSolarDate = _findSolarDateForLunar(day, month, year);
 
         if (foundSolarDate != null) {
@@ -112,22 +113,6 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
             _focusedDay = foundSolarDate;
             _selectedDay = foundSolarDate;
           });
-        } else {
-          // If we can't find the exact lunar date, show an error
-          showCupertinoDialog(
-            context: context,
-            builder: (context) => CupertinoAlertDialog(
-              title: const Text('Không tìm thấy ngày'),
-              content: const Text(
-                  'Không thể tìm thấy ngày dương lịch tương ứng với ngày âm lịch đã chọn.'),
-              actions: [
-                CupertinoDialogAction(
-                  child: const Text('OK'),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          );
         }
       },
     );
@@ -337,99 +322,64 @@ class _LunarCalendarScreenState extends State<LunarCalendarScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            border:
-                                Border.all(color: CupertinoColors.systemRed),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              '1',
-                              style: TextStyle(
-                                color: CupertinoColors.systemRed,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Expanded(
-                          child: Text(
-                            'Ngày lễ',
-                            style: TextStyle(
-                              color: CupertinoColors.label,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
+                  const LegendItem(
+                    icon: Icons.cake_rounded,
+                    label: 'Sinh nhật',
+                    color: CupertinoColors.systemPurple,
+                  ),
+                  const SizedBox(width: 16),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: CupertinoColors.systemRed, width: 2),
+                    ),
+                    child: const Text(
+                      '1',
+                      style: TextStyle(
+                        color: CupertinoColors.systemRed,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  const Expanded(
-                    child: LegendItem(
-                      icon: Icons.cake_rounded,
-                      color: CupertinoColors.systemPurple,
-                      label: 'Sinh nhật',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Hiển thị thông tin ngày được chọn
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: CupertinoColors.systemGrey6,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: CupertinoColors.systemGrey4),
-              ),
-              child: DetailedDayView(
-                selectedDate: _selectedDay ?? DateTime.now(),
-                showSolarCalendar: false,
-                showLunarCalendar: true,
-              ),
-            ),
-
-            // Hiển thị sự kiện cho ngày được chọn
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: CupertinoColors.systemGrey6,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: CupertinoColors.systemGrey4),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                  const SizedBox(width: 8),
                   const Text(
-                    'Sự kiện',
+                    'Ngày lễ',
                     style: TextStyle(
-                      color: CupertinoColors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: CupertinoColors.label,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  EventListWidget(
-                    events: _getEventsForDay(_selectedDay ?? DateTime.now()),
-                    isLoading: _isLoading,
-                    onEventDeleted: _loadEvents,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 8.0),
+
+            // Selected day details
+            if (_selectedDay != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: DetailedDayView(
+                  selectedDate: _selectedDay!,
+                ),
+              ),
+
+            const SizedBox(height: 8.0),
+
+            // Events list for the selected day
+            if (_selectedDay != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: EventListWidget(
+                  events: _getEventsForDay(_selectedDay!),
+                  isLoading: _isLoading,
+                  onEventDeleted: _loadEvents,
+                ),
+              ),
           ],
         ),
       ),

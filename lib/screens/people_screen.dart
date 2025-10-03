@@ -1,6 +1,7 @@
 import 'package:birthday_note/models/event_model.dart';
 import 'package:birthday_note/screens/edit_person_screen.dart';
 import 'package:birthday_note/screens/person_detail_screen.dart';
+import 'package:birthday_note/services/data_import_service.dart';
 import 'package:birthday_note/services/event_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -93,6 +94,87 @@ class _PeopleScreenState extends State<PeopleScreen> {
     );
   }
 
+  Future<void> _importBirthdayData() async {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Import Dữ liệu'),
+        content: const Text('Bạn có muốn import tất cả dữ liệu sinh nhật?'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Hủy'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          CupertinoDialogAction(
+            child: const Text('Import'),
+            onPressed: () async {
+              Navigator.pop(context);
+              await DataImportService.importBirthdayData();
+              _loadPeople(); // Refresh the list
+              if (context.mounted) {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: const Text('Thành công'),
+                    content:
+                        const Text('Đã import dữ liệu sinh nhật thành công!'),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: const Text('OK'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeAllData() async {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Xóa Tất Cả Dữ Liệu'),
+        content: const Text(
+            'Bạn có chắc chắn muốn xóa tất cả dữ liệu sinh nhật? Hành động này không thể hoàn tác.'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Hủy'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Xóa Tất Cả'),
+            onPressed: () async {
+              Navigator.pop(context);
+              await EventService.deleteAllEvents();
+              _loadPeople(); // Refresh the list
+              if (context.mounted) {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: const Text('Đã Xóa'),
+                    content: const Text('Đã xóa tất cả dữ liệu sinh nhật!'),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: const Text('OK'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getRelationshipText(RelationshipType relationship) {
     switch (relationship) {
       case RelationshipType.family:
@@ -129,15 +211,38 @@ class _PeopleScreenState extends State<PeopleScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
+      navigationBar: CupertinoNavigationBar(
         backgroundColor: CupertinoColors.white,
-        middle: Text(
+        middle: const Text(
           'Mọi người',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: CupertinoColors.black,
           ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _removeAllData,
+              child: const Icon(
+                CupertinoIcons.trash_circle,
+                color: CupertinoColors.systemRed,
+                size: 24,
+              ),
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _importBirthdayData,
+              child: const Icon(
+                CupertinoIcons.add_circled,
+                color: CupertinoColors.systemBlue,
+                size: 24,
+              ),
+            ),
+          ],
         ),
       ),
       child: SafeArea(

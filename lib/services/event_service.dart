@@ -54,6 +54,12 @@ class EventService {
     await saveEvents(events);
   }
 
+  // Xóa tất cả events
+  static Future<void> deleteAllEvents() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_eventsKey);
+  }
+
   // Lấy events cho một ngày cụ thể
   static Future<List<Event>> getEventsForDate(DateTime date) async {
     final allEvents = await getEvents();

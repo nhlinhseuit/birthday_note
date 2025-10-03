@@ -309,15 +309,24 @@ class _EditPersonScreenState extends State<EditPersonScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  CupertinoTextField(
-                    controller: _personNotesController,
-                    placeholder: 'Nhập ghi chú về người này...',
-                    maxLines: 5,
-                    padding: const EdgeInsets.all(16),
+                  Container(
+                    height: 120,
                     decoration: BoxDecoration(
                       color: CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: CupertinoColors.systemGrey4),
+                    ),
+                    child: CupertinoTextField(
+                      controller: _personNotesController,
+                      placeholder: 'Nhập ghi chú về người này...',
+                      maxLines: null,
+                      expands: true,
+                      textAlignVertical: TextAlignVertical.top,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
 

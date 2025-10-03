@@ -1,4 +1,5 @@
 import 'package:birthday_note/models/event_model.dart';
+import 'package:birthday_note/screens/edit_person_screen.dart';
 import 'package:birthday_note/screens/person_detail_screen.dart';
 import 'package:birthday_note/services/event_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -180,7 +181,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
                   CupertinoButton(
                     padding: const EdgeInsets.all(8),
                     onPressed: _showRelationshipFilterModal,
@@ -391,6 +392,19 @@ class _PeopleScreenState extends State<PeopleScreen> {
         ),
         const SizedBox(height: 8),
         _buildRelationshipAndTypeRow(event, relationshipColor),
+        if (event.personNotes != null && event.personNotes!.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            event.personNotes!,
+            style: const TextStyle(
+              fontSize: 12,
+              color: CupertinoColors.systemGrey2,
+              fontStyle: FontStyle.italic,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ],
     );
   }
@@ -463,9 +477,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
             ),
           ],
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 4),
         CupertinoButton(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 4),
           onPressed: () => _navigateToEditPerson(event),
           child: Container(
             width: 32,
@@ -504,7 +518,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final result = await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (context) => PersonDetailScreen(event: event),
+        builder: (context) => EditPersonScreen(event: event),
       ),
     );
     if (result != null) {

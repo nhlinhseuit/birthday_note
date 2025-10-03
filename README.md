@@ -32,20 +32,26 @@
 
 ### 🎉 **Ngày Lễ Lịch Âm Tích Hợp**
 
-Tự động hiển thị các ngày lễ truyền thống Việt Nam:
+Tự động hiển thị các ngày lễ truyền thống Việt Nam với **màu đỏ** để dễ nhận biết:
 
-- **Tết Nguyên Đán** (1/1 âm lịch)
-- **Tết Nguyên Tiêu** (15/1 âm lịch)
-- **Tết Hàn Thực** (3/3 âm lịch)
-- **Lễ Phật Đản** (8/4 âm lịch)
-- **Tết Đoan Ngọ** (5/5 âm lịch)
-- **Tết Thất Tịch** (7/7 âm lịch)
-- **Tết Trung Nguyên** (15/7 âm lịch)
-- **Tết Trung Thu** (15/8 âm lịch)
-- **Tết Trùng Cửu** (9/9 âm lịch)
-- **Tết Thường Tân** (10/10 âm lịch)
-- **Tết Lạp Bát** (8/12 âm lịch)
-- **Tết Táo Quân** (23/12 âm lịch)
+- **Tết Nguyên Đán** (1/1 âm lịch) - Ngày đầu năm mới
+- **Tết Trung Thu** (15/8 âm lịch) - Tết thiếu nhi
+
+### 🎂 **Hệ Thống Biểu Tượng Thông Minh**
+
+Ứng dụng sử dụng **2 loại biểu tượng** để phân biệt các loại sự kiện:
+
+#### 🔴 **Ngày Lễ Lịch Âm**
+
+- **Màu đỏ**: Text của ngày lễ được hiển thị màu đỏ
+- **Font đậm**: Tên ngày lễ được làm đậm để nổi bật
+- **Tự động**: Hiển thị tự động theo lịch âm Việt Nam
+
+#### 🎂 **Sự Kiện Cá Nhân**
+
+- **Icon bánh kem**: Biểu tượng bánh kem màu tím hiển thị trên ngày có sự kiện
+- **Vị trí**: Góc dưới bên phải của ô ngày
+- **Tương tác**: Click vào ngày để xem chi tiết sự kiện
 
 ## 🎨 **Giao Diện & Trải Nghiệm**
 
@@ -85,12 +91,20 @@ Tự động hiển thị các ngày lễ truyền thống Việt Nam:
 
 - **SharedPreferences**: Lưu trữ dữ liệu events
 - **JSON Serialization**: Chuyển đổi dữ liệu an toàn
+- **Real-time Sync**: Đồng bộ dữ liệu giữa các màn hình lịch
 
 ### **UI Libraries**
 
-- **Table Calendar**: Hiển thị lịch đẹp mắt
+- **Table Calendar**: Hiển thị lịch đẹp mắt với marker builder
 - **Font Awesome**: Icons phong phú
 - **Flutter Animate**: Hiệu ứng mượt mà
+
+### **Lunar Calendar Accuracy**
+
+- **Hồ Ngọc Đức Algorithm**: Sử dụng thuật toán chuẩn của Việt Nam
+- **24h.com.vn Data**: Dữ liệu chính xác từ nguồn uy tín
+- **Lookup Tables**: Bảng tra cứu cho năm 2025 với độ chính xác cao
+- **Fallback Algorithm**: Thuật toán dự phòng cho các năm khác
 
 ### **Firebase Integration**
 
@@ -154,22 +168,29 @@ flutter build ios --release
 ```
 lib/
 ├── models/
-│   └── event_model.dart          # Model cho sự kiện
+│   └── event_model.dart                    # Model cho sự kiện với EventType & RepeatType
 ├── screens/
-│   ├── create_event_screen.dart  # Màn hình tạo sự kiện
-│   └── upcoming_events_screen.dart # Màn hình sự kiện sắp tới
+│   ├── create_event_screen.dart            # Màn hình tạo sự kiện với dual calendar support
+│   └── upcoming_events_screen.dart         # Màn hình sự kiện sắp tới
 ├── services/
-│   ├── event_service.dart        # Service quản lý sự kiện
-│   └── lunar_calendar_service.dart # Service lịch âm
+│   ├── event_service.dart                  # Service quản lý sự kiện với SharedPreferences
+│   ├── lunar_calendar_service.dart         # Service lịch âm wrapper
+│   └── accurate_lunar_calendar_service.dart # Service lịch âm chính xác với lookup tables
+├── widgets/
+│   ├── calendar_day_cell.dart              # Component ô ngày với holiday detection
+│   ├── cupertino_date_picker_widget.dart   # Date picker component
+│   ├── detailed_day_view.dart              # Chi tiết ngày được chọn
+│   ├── legend_item.dart                    # Component legend
+│   └── weekday_header.dart                 # Header thứ trong tuần
 ├── utils/
-│   ├── app_utils.dart           # Utilities chung
-│   └── utils.dart               # Helper functions
-├── home_screen.dart             # Màn hình chính với navigation
-├── main_screen.dart             # Màn hình lịch dương
-├── lunar_calendar_screen.dart   # Màn hình lịch âm
-├── table_calendar.dart          # Component lịch
-├── app_view.dart                # App configuration
-└── main.dart                    # Entry point
+│   ├── app_utils.dart                      # Utilities chung
+│   └── utils.dart                           # Helper functions
+├── home_screen.dart                         # Màn hình chính với bottom navigation
+├── main_screen.dart                         # Màn hình lịch dương
+├── lunar_calendar_screen.dart               # Màn hình lịch âm với event markers
+├── table_calendar.dart                      # Component lịch dương với event markers
+├── app_view.dart                            # App configuration
+└── main.dart                                # Entry point
 ```
 
 ## 📄 **License**

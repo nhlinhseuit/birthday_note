@@ -58,9 +58,11 @@ class CalendarDayCell extends StatelessWidget {
               child: Text(
                 _getMainDateText(),
                 style: TextStyle(
-                  color: isBeforeCurrentDate
-                      ? CupertinoColors.systemGrey2
-                      : CupertinoColors.black,
+                  color: holiday != null
+                      ? CupertinoColors.systemRed
+                      : isBeforeCurrentDate
+                          ? CupertinoColors.systemGrey2
+                          : CupertinoColors.black,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
@@ -108,7 +110,8 @@ class CalendarDayCell extends StatelessWidget {
       case CalendarType.solar:
         return '${lunarInfo.day}'; // Lunar date below solar date
       case CalendarType.lunar:
-        return lunarInfo.day == 1
+        // Show month name on day 1 or when the date is outside the current month
+        return lunarInfo.day == 1 || isOutside
             ? lunarInfo.monthName
             : ''; // Month name for lunar calendar
     }

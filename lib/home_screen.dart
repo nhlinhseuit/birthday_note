@@ -1,6 +1,7 @@
 import 'package:birthday_note/lunar_calendar_screen.dart';
 import 'package:birthday_note/main_screen.dart';
 import 'package:birthday_note/screens/upcoming_events_screen.dart';
+import 'package:birthday_note/screens/people_screen.dart';
 import 'package:birthday_note/utils/app_utils.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -22,6 +23,8 @@ class _HomeScreenExpenseState extends State<HomeScreenExpense> {
         return const LunarCalendarScreen();
       case 2:
         return const UpcomingEventsScreen();
+      case 3:
+        return const PeopleScreen();
       default:
         return const MainScreen();
     }
@@ -31,10 +34,10 @@ class _HomeScreenExpenseState extends State<HomeScreenExpense> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (!didPop) {
           final shouldPop = await AppUtils.onWillPop(context);
-          if (shouldPop) {
+          if (shouldPop && context.mounted) {
             Navigator.of(context).pop();
           }
         }
@@ -77,6 +80,10 @@ class _HomeScreenExpenseState extends State<HomeScreenExpense> {
                 BottomNavigationBarItem(
                   icon: Icon(CupertinoIcons.bell),
                   label: 'Sắp tới',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(CupertinoIcons.person_3_fill),
+                  label: 'Mọi người',
                 ),
               ],
             ),

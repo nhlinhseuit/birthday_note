@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+
+### Code Organization & Readability
+
+- **Create getters for variables used more than 2 times in a page**
+  - Example: If `widget.props` appears 3+ times, create `get props => widget.props`
+  - This improves readability and reduces repetition
+- **Avoid deeply nested UI widget building**
+  - Separate complex UI into smaller, focused widgets
+  - Use `_` prefix for private helper widgets (e.g., `_buildTextField`, `_buildHeader`)
+  - Keep widget building methods focused and readable
+- **Always fix const warning for the best performance**
+  - Use `const` constructors for all static widgets
+  - Mark static content as const to avoid unnecessary rebuilds
+  - Extract const widgets to improve performance
+
+### Flutter Performance Rules
+
+- **Const Usage (MANDATORY)**
+
+  - All static widgets MUST use `const` constructor
+  - Text, SizedBox, Icon, Container with static content should be const
+  - Extract const widgets for better performance
+  - Fix ALL const warnings immediately
+
+- **Widget Composition**
+
+  - Break down complex UI into smaller, focused widgets
+  - Use private helper methods with `_` prefix
+  - Avoid nesting more than 4 levels deep
+  - Extract repeated UI patterns into reusable widgets
+
+- **Code Structure**
+  - One major widget per file
+  - Group related helper widgets together
+  - Use descriptive method names (`_buildUserCard`, `_buildSearchBar`)
+  - Keep build methods under 50 lines when possible
+
+### Performance Checklist
+
+- [ ] All static widgets use `const`
+- [ ] Complex UI broken into smaller widgets
+- [ ] No deeply nested widget trees (>4 levels)
+- [ ] Private helper widgets use `_` prefix
+- [ ] Widget methods are focused and readable
+- [ ] No const warnings in linter

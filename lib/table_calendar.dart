@@ -3,16 +3,28 @@
 
 // ignore_for_file: avoid_print
 
+import 'package:birthday_note/screens/create_event_screen.dart';
+import 'package:birthday_note/services/event_service.dart';
+import 'package:birthday_note/models/event_model.dart';
+import 'package:birthday_note/services/lunar_calendar_service.dart';
 import 'package:birthday_note/utils/app_utils.dart';
-import 'package:birthday_note/utils/utils.dart' as utils;
 import 'package:birthday_note/widgets/calendar_day_cell.dart';
 import 'package:birthday_note/widgets/cupertino_date_picker_widget.dart';
 import 'package:birthday_note/widgets/detailed_day_view.dart';
+import 'package:birthday_note/widgets/event_list_widget.dart';
 import 'package:birthday_note/widgets/legend_item.dart';
 import 'package:birthday_note/widgets/weekday_header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+// Helper function to check if two dates are the same day
+bool isSameDay(DateTime? date1, DateTime date2) {
+  if (date1 == null) return false;
+  return date1.year == date2.year &&
+      date1.month == date2.month &&
+      date1.day == date2.day;
+}
 
 class TableEventsExample extends StatefulWidget {
   const TableEventsExample({super.key});
@@ -22,38 +34,74 @@ class TableEventsExample extends StatefulWidget {
 }
 
 class _TableEventsExampleState extends State<TableEventsExample> {
-  late final ValueNotifier<List<utils.Event>> _selectedEvents;
   final CalendarFormat _calendarFormat = CalendarFormat.month;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+  List<Event> _events = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
 
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _loadEvents();
   }
 
   @override
-  void dispose() {
-    _selectedEvents.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh events when returning to this screen
+    _loadEvents();
   }
 
-  List<utils.Event> _getEventsForDay(DateTime day) {
-    return utils.kEvents[day] ?? [];
+  Future<void> _loadEvents() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final events = await EventService.getEvents();
+      setState(() {
+        _events = events;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  List<utils.Event> _getEventsForRange(DateTime start, DateTime end) {
-    final days = utils.daysInRange(start, end);
+  List<Event> _getEventsForDay(DateTime day) {
+    return _events.where((event) {
+      if (event.type == EventType.lunar) {
+        // For lunar events, check if the lunar date matches
+        final eventLunar = LunarCalendarService.convertToLunar(event.date);
+        final dayLunar = LunarCalendarService.convertToLunar(day);
 
-    return [
-      for (final d in days) ..._getEventsForDay(d),
-    ];
+        if (event.repeatType == RepeatType.yearly) {
+          // Yearly repeat: check month and day
+          return eventLunar.month == dayLunar.month &&
+              eventLunar.day == dayLunar.day;
+        } else {
+          // No repeat: check exact date
+          return eventLunar.month == dayLunar.month &&
+              eventLunar.day == dayLunar.day &&
+              eventLunar.year == dayLunar.year;
+        }
+      } else {
+        // For solar events, check solar date
+        if (event.repeatType == RepeatType.yearly) {
+          return event.date.month == day.month && event.date.day == day.day;
+        } else {
+          return isSameDay(event.date, day);
+        }
+      }
+    }).toList();
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -65,8 +113,6 @@ class _TableEventsExampleState extends State<TableEventsExample> {
         _rangeEnd = null;
         _rangeSelectionMode = RangeSelectionMode.toggledOff;
       });
-
-      _selectedEvents.value = _getEventsForDay(selectedDay);
     }
   }
 
@@ -78,20 +124,14 @@ class _TableEventsExampleState extends State<TableEventsExample> {
       _rangeEnd = end;
       _rangeSelectionMode = RangeSelectionMode.toggledOn;
     });
-
-    if (start != null && end != null) {
-      _selectedEvents.value = _getEventsForRange(start, end);
-    } else if (start != null) {
-      _selectedEvents.value = _getEventsForDay(start);
-    } else if (end != null) {
-      _selectedEvents.value = _getEventsForDay(end);
-    }
   }
 
   Future<void> _selectDate() async {
     await CupertinoDatePickerWidget.showSolarDatePicker(
       context: context,
       initialDate: _focusedDay,
+      minimumYear: 2020,
+      maximumYear: 2030,
       onDateSelected: (DateTime selectedDate) {
         setState(() {
           _focusedDay = selectedDate;
@@ -136,7 +176,18 @@ class _TableEventsExampleState extends State<TableEventsExample> {
         ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () {},
+          onPressed: () async {
+            final newEvent = await Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => const CreateEventScreen(),
+              ),
+            );
+
+            if (newEvent != null) {
+              _loadEvents();
+            }
+          },
           child: const Icon(
             CupertinoIcons.add,
             color: CupertinoColors.systemBlue,
@@ -155,9 +206,9 @@ class _TableEventsExampleState extends State<TableEventsExample> {
           const WeekdayHeader(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TableCalendar<utils.Event>(
-              firstDay: utils.kFirstDay,
-              lastDay: utils.kLastDay,
+            child: TableCalendar<Event>(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
               focusedDay: _focusedDay,
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               rangeStartDay: _rangeStart,
@@ -170,26 +221,26 @@ class _TableEventsExampleState extends State<TableEventsExample> {
               daysOfWeekHeight: 0,
               calendarStyle: const CalendarStyle(
                 outsideDaysVisible: false,
-                defaultTextStyle: const TextStyle(
+                defaultTextStyle: TextStyle(
                   color: CupertinoColors.label,
                 ),
-                todayTextStyle: const TextStyle(
+                todayTextStyle: TextStyle(
                   color: CupertinoColors.label,
                 ),
-                selectedTextStyle: const TextStyle(
+                selectedTextStyle: TextStyle(
                   color: CupertinoColors.white,
                 ),
-                weekendTextStyle: const TextStyle(
+                weekendTextStyle: TextStyle(
                   color: CupertinoColors.systemRed,
                 ),
-                outsideTextStyle: const TextStyle(
+                outsideTextStyle: TextStyle(
                   color: CupertinoColors.systemGrey,
                 ),
               ),
               headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
-                titleTextStyle: const TextStyle(
+                titleTextStyle: TextStyle(
                   color: CupertinoColors.label,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -208,26 +259,32 @@ class _TableEventsExampleState extends State<TableEventsExample> {
               },
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
+                  final isOutside = day.month != focusedDay.month;
                   return CalendarDayCell(
                     day: day,
                     isSelected: false,
                     isToday: false,
+                    isOutside: isOutside,
                     calendarType: CalendarType.solar,
                   );
                 },
                 selectedBuilder: (context, day, focusedDay) {
+                  final isOutside = day.month != focusedDay.month;
                   return CalendarDayCell(
                     day: day,
                     isSelected: true,
                     isToday: false,
+                    isOutside: isOutside,
                     calendarType: CalendarType.solar,
                   );
                 },
                 todayBuilder: (context, day, focusedDay) {
+                  final isOutside = day.month != focusedDay.month;
                   return CalendarDayCell(
                     day: day,
                     isSelected: false,
                     isToday: true,
+                    isOutside: isOutside,
                     calendarType: CalendarType.solar,
                   );
                 },
@@ -242,17 +299,13 @@ class _TableEventsExampleState extends State<TableEventsExample> {
                 },
                 markerBuilder: (context, day, events) {
                   if (events.isNotEmpty) {
-                    return Positioned(
-                      bottom: 10,
+                    return const Positioned(
+                      bottom: 8,
                       right: 6,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 1.0),
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: CupertinoColors.systemBlue,
-                        ),
+                      child: Icon(
+                        Icons.cake_rounded,
+                        size: 12,
+                        color: CupertinoColors.systemPurple,
                       ),
                     );
                   }
@@ -280,13 +333,40 @@ class _TableEventsExampleState extends State<TableEventsExample> {
             child: Row(
               children: [
                 Expanded(
-                  child: LegendItem(
-                    icon: CupertinoIcons.star_fill,
-                    color: CupertinoColors.systemOrange,
-                    label: 'Ngày lễ',
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: CupertinoColors.systemRed),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '1',
+                            style: TextStyle(
+                              color: CupertinoColors.systemRed,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'Ngày lễ',
+                          style: TextStyle(
+                            color: CupertinoColors.label,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
+                const Expanded(
                   child: LegendItem(
                     icon: Icons.cake_rounded,
                     color: CupertinoColors.systemPurple,
@@ -312,62 +392,34 @@ class _TableEventsExampleState extends State<TableEventsExample> {
             ),
           ),
           const SizedBox(height: 8.0),
-          ValueListenableBuilder<List<utils.Event>>(
-            valueListenable: _selectedEvents,
-            builder: (context, value, _) {
-              if (value.isEmpty) {
-                return const SizedBox(
-                  height: 100,
-                  child: Center(
-                    child: Text(
-                      'Không có sự kiện nào',
-                      style: TextStyle(
-                        color: CupertinoColors.systemGrey,
-                      ),
-                    ),
+          // Hiển thị sự kiện cho ngày được chọn
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: CupertinoColors.systemGrey6,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: CupertinoColors.systemGrey4),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Sự kiện',
+                  style: TextStyle(
+                    color: CupertinoColors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
-                );
-              }
-              return Column(
-                children: [
-                  for (int index = 0; index < value.length; index++)
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 4.0,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: CupertinoColors.systemGrey4,
-                        ),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: CupertinoButton(
-                        padding: const EdgeInsets.all(16),
-                        onPressed: () => print('${value[index]}'),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${value[index]}',
-                                style: const TextStyle(
-                                  color: CupertinoColors.black,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            const Icon(
-                              CupertinoIcons.chevron_right,
-                              color: CupertinoColors.systemGrey,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
+                ),
+                const SizedBox(height: 12),
+                EventListWidget(
+                  events: _getEventsForDay(_selectedDay ?? DateTime.now()),
+                  isLoading: _isLoading,
+                  onEventDeleted: _loadEvents,
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -33,7 +33,8 @@ class EventRepositoryImpl implements EventRepository {
       }).toList();
       return Right(filteredEvents);
     } catch (e) {
-      return Left(CacheFailure('Failed to get events in range: ${e.toString()}'));
+      return Left(
+          CacheFailure('Failed to get events in range: ${e.toString()}'));
     }
   }
 
@@ -44,7 +45,7 @@ class EventRepositoryImpl implements EventRepository {
       final event = events.firstWhere((e) => e.id == id);
       return Right(event);
     } catch (e) {
-      return Left(CacheFailure('Event not found'));
+      return const Left(CacheFailure('Event not found'));
     }
   }
 
@@ -80,4 +81,3 @@ class EventRepositoryImpl implements EventRepository {
     }
   }
 }
-

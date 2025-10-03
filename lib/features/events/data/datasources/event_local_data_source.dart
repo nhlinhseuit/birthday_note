@@ -11,7 +11,7 @@ abstract class EventLocalDataSource {
   Future<void> cacheEvents(List<EventModel> events);
 }
 
-const String CACHED_EVENTS = 'CACHED_EVENTS';
+const String cachedEvents = 'cachedEvents';
 
 @LazySingleton(as: EventLocalDataSource)
 class EventLocalDataSourceImpl implements EventLocalDataSource {
@@ -21,7 +21,7 @@ class EventLocalDataSourceImpl implements EventLocalDataSource {
 
   @override
   Future<List<EventModel>> getAllEvents() async {
-    final jsonString = sharedPreferences.getString(CACHED_EVENTS);
+    final jsonString = sharedPreferences.getString(cachedEvents);
     if (jsonString != null) {
       final List<dynamic> jsonList = json.decode(jsonString);
       return jsonList.map((json) => EventModel.fromJson(json)).toList();
@@ -57,6 +57,6 @@ class EventLocalDataSourceImpl implements EventLocalDataSource {
   @override
   Future<void> cacheEvents(List<EventModel> events) async {
     final jsonList = events.map((e) => e.toJson()).toList();
-    await sharedPreferences.setString(CACHED_EVENTS, json.encode(jsonList));
+    await sharedPreferences.setString(cachedEvents, json.encode(jsonList));
   }
 }

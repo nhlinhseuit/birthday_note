@@ -84,9 +84,12 @@ class EventService {
 
       // Nếu là event lịch âm
       if (event.type == EventType.lunar) {
+        // For lunar events, we need to check if the current date has the same lunar date
+        // as the original event date when it was created
         final eventLunar = LunarCalendarService.convertToLunar(event.date);
         final dateLunar = LunarCalendarService.convertToLunar(date);
 
+        // Check if both dates have the same lunar month and day
         return eventLunar.month == dateLunar.month &&
             eventLunar.day == dateLunar.day;
       }
@@ -106,16 +109,30 @@ class EventService {
 
     while (!currentDate.isAfter(endDate)) {
       for (final event in allEvents) {
-        if (_shouldShowEventOnDate(event, currentDate) &&
-            !eventsInRange.any(
-                (e) => e.id == event.id && isSameDay(e.date, currentDate))) {
-          // Tạo một bản sao của event với ngày hiện tại để hiển thị
-          eventsInRange.add(event.copyWith(date: currentDate));
+        if (_shouldShowEventOnDate(event, currentDate)) {
+          // Check if we already have this event in the range
+          bool alreadyExists = false;
+
+          if (event.repeatType == RepeatType.yearly) {
+            // For yearly events (both solar and lunar), check if we already have this event (by ID) in the range
+            alreadyExists = eventsInRange.any((e) => e.id == event.id);
+          } else {
+            // For non-yearly events, check if we already have this event on this specific date
+            alreadyExists = eventsInRange
+                .any((e) => e.id == event.id && isSameDay(e.date, currentDate));
+          }
+
+          if (!alreadyExists) {
+            // Tạo một bản sao của event với ngày hiện tại để hiển thị
+            eventsInRange.add(event.copyWith(date: currentDate));
+          }
         }
       }
       currentDate = currentDate.add(const Duration(days: 1));
     }
 
+    // Sort events by date before returning
+    eventsInRange.sort((a, b) => a.date.compareTo(b.date));
     return eventsInRange;
   }
 }
